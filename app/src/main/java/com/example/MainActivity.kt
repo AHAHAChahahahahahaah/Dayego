@@ -531,7 +531,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 Button(
                                     onClick = { viewModel.requestPermission() },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.White.copy(alpha = 0.07f),
+                                        containerColor = EmeraldLight.copy(alpha = 0.12f),
                                         contentColor = EmeraldLight
                                     ),
                                     border = BorderStroke(1.dp, EmeraldLight.copy(alpha = 0.4f)),
@@ -679,8 +679,8 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     // Plus button option aligned at the end of list for adding a custom package definition
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = Color.White.copy(alpha = 0.02f),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                        color = Color.White.copy(alpha = 0.04f),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
@@ -694,7 +694,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(Color.White.copy(alpha = 0.03f)),
+                                    .background(Color.White.copy(alpha = 0.05f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 SpriteIcon(
@@ -1080,7 +1080,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                     modifier = Modifier.weight(1f),
                                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.White.copy(alpha = 0.08f),
+                                        containerColor = EmeraldLight.copy(alpha = 0.12f),
                                         contentColor = EmeraldLight
                                     ),
                                     border = BorderStroke(1.dp, EmeraldLight.copy(alpha = 0.4f))
@@ -1109,7 +1109,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 onClick = { viewModel.clearExportedFile() },
                                 shape = RoundedCornerShape(16.dp),
                                 modifier = Modifier.fillMaxWidth(),
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
                                 contentPadding = PaddingValues(vertical = 12.dp)
                             ) {
                                 Text(
