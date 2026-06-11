@@ -214,121 +214,164 @@ fun MainTopAppBar(viewModel: MainViewModel) {
     val isRussian by viewModel.isRussian.collectAsState()
     val state = uiState as? UiState.Success
 
-    TopAppBar(
-        title = {
-            Column {
-                Text(
-                    text = if (isRussian) "MC World Exporter" else "MC World Exporter",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = if (isRussian) "через Shizuku Binder" else "via Shizuku Binder",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = TextSecondary
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+    CenterAlignedTopAppBar(
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    try {
+                        val launchIntent = context.packageManager.getLaunchIntentForPackage("com.ananas.pinelauncher")
+                        if (launchIntent != null) {
+                            context.startActivity(launchIntent)
+                        } else {
+                            Toast.makeText(context, if (isRussian) "Приложение PineLauncher не найдено" else "PineLauncher app not found", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .padding(start = 12.dp)
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White.copy(alpha = 0.07f))
+                    .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
+            ) {
+                SpriteIcon(
+                    spriteRes = R.drawable.icons,
+                    indexX = 1,
+                    indexY = 3,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         },
-        actions = {
-            // Language selector button as a glassy pill
-            Surface(
-                onClick = { viewModel.toggleLanguage() },
-                shape = RoundedCornerShape(16.dp),
-                color = Color.White.copy(alpha = 0.07f),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
-                modifier = Modifier.padding(end = 8.dp)
+        title = {
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.07f)
+                ),
+                border = BorderStroke(
+                    1.dp,
+                    Color.White.copy(alpha = 0.2f)
+                ),
+                modifier = Modifier.height(44.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(horizontal = 24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "RU",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isRussian) Color.White else Color.White.copy(alpha = 0.5f)
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    SpriteIcon(
-                        spriteRes = R.drawable.icons,
-                        indexX = 1,
-                        indexY = 1,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "EN",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (!isRussian) Color.White else Color.White.copy(alpha = 0.5f)
-                        )
+                        text = if (isRussian) "Мои миры" else "My Worlds",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.White
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
-
-            if (state != null) {
-                val isShizukuOk = state.shizukuAvailable && state.shizukuPermission
-                
-                Surface(
-                    onClick = {
-                        if (!state.shizukuAvailable) {
-                            Toast.makeText(
-                                context, 
-                                if (isRussian) "Служба Shizuku сообщает об отключении." else "Shizuku Service is reporting disconnected.", 
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else if (!state.shizukuPermission) {
-                            viewModel.requestPermission()
-                        } else {
-                            Toast.makeText(
-                                context, 
-                                if (isRussian) "Shizuku активен и авторизован!" else "Shizuku is active and authorized!", 
-                                Toast.LENGTH_SHORT
-                            ).show()
+        },
+        actions = {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(end = 12.dp)
+            ) {
+                if (state != null) {
+                    val isShizukuOk = state.shizukuAvailable && state.shizukuPermission
+                    
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color.White.copy(alpha = 0.07f),
+                        border = BorderStroke(
+                            1.dp, 
+                            if (isShizukuOk) EmeraldLight.copy(alpha = 0.4f) else ErrorRed.copy(alpha = 0.4f)
+                        ),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
+                                if (!state.shizukuAvailable) {
+                                    Toast.makeText(
+                                        context, 
+                                        if (isRussian) "Служба Shizuku сообщает об отключении." else "Shizuku Service is reporting disconnected.", 
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else if (!state.shizukuPermission) {
+                                    viewModel.requestPermission()
+                                } else {
+                                    Toast.makeText(
+                                        context, 
+                                        if (isRussian) "Shizuku активен и авторизован!" else "Shizuku is active and authorized!", 
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isShizukuOk) EmeraldLight else ErrorRed)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (isShizukuOk) {
+                                    if (isRussian) "АКТИВЕН" else "ACTIVE"
+                                } else {
+                                    if (isRussian) "ОШИБКА" else "ERROR"
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (isShizukuOk) EmeraldLight else ErrorRed
+                                )
+                            )
                         }
-                    },
+                    }
+                }
+
+                Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White.copy(alpha = 0.07f),
-                    border = BorderStroke(
-                        1.dp, 
-                        if (isShizukuOk) EmeraldLight.copy(alpha = 0.4f) else ErrorRed.copy(alpha = 0.4f)
-                    ),
-                    modifier = Modifier.padding(end = 12.dp)
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { viewModel.toggleLanguage() }
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(if (isShizukuOk) EmeraldLight else ErrorRed)
+                        Text(
+                            text = "RU",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = if (isRussian) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        SpriteIcon(
+                            spriteRes = R.drawable.icons,
+                            indexX = 1,
+                            indexY = 1,
+                            modifier = Modifier.size(12.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isShizukuOk) {
-                                if (isRussian) "АКТИВЕН" else "ACTIVE"
-                            } else {
-                                if (isRussian) "ОШИБКА" else "ERROR"
-                            },
+                            text = "EN",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isShizukuOk) EmeraldLight else ErrorRed
+                                fontWeight = FontWeight.Normal,
+                                color = if (!isRussian) Color.White else Color.White.copy(alpha = 0.5f)
                             )
                         )
                     }
@@ -428,7 +471,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 text = if (isRussian) "Как настроить / Помощь" else "Troubleshooting Guide",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Normal,
                                     color = Color.White
                                 )
                             )
@@ -478,7 +521,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 ) {
                                     Text(
                                         text = if (isRussian) "Открыть Shizuku" else "Open Shizuku App", 
-                                        fontWeight = FontWeight.Bold,
+                                        fontWeight = FontWeight.Normal,
                                         fontSize = 12.sp
                                     )
                                 }
@@ -497,7 +540,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 Text(
                                     text = if (isRussian) "Разрешить доступ" else "Grant Permission", 
                                     color = EmeraldLight,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Normal,
                                     fontSize = 12.sp
                                 )
                             }
@@ -516,7 +559,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     text = if (isRussian) "Целевая папка игры" else "Target Game Folder",
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Normal,
                         color = EmeraldLight
                     )
                 )
@@ -552,7 +595,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                     Text(
                                         text = labelRes, 
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Normal
                                     ) 
                                 },
                                 shape = RoundedCornerShape(20.dp),
@@ -618,7 +661,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 text = if (isRussian) "Активный пакет: ${state.selectedPackage}" else "Active Package: ${state.selectedPackage}",
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Normal
                                 ),
                                 color = TextPrimary,
                                 maxLines = 1,
@@ -655,7 +698,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         text = if (isRussian) "Миры (${state.worlds.size})" else "Worlds (${state.worlds.size})",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.ExtraBold,
+                            fontWeight = FontWeight.Normal,
                             color = Color.White
                         )
                     )
@@ -679,7 +722,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (isRussian) "ОБНОВИТЬ" else "SCAN", 
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 12.sp
                         )
                     }
@@ -736,7 +779,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         text = if (isRussian) "Миры не обнаружены" else "No Worlds Detected",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Normal
                         ),
                         color = Color.White,
                         textAlign = TextAlign.Center
@@ -767,7 +810,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     ) {
                         Text(
                             text = if (isRussian) "ФОРСИРОВАТЬ СКАНИРОВАНИЕ" else "FORCE SCAN NOW", 
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 13.sp
                         )
                     }
@@ -795,7 +838,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             text = if (isRussian) "Экспорт мира Minecraft" else "Exporting Minecraft World",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Normal,
                                 color = Color.White
                             )
                         )
@@ -863,7 +906,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             text = if (isRussian) "Мир экспортирован!" else "World Exported!",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontSize = 18.sp,
-                                fontWeight = FontWeight.ExtraBold,
+                                fontWeight = FontWeight.Normal,
                                 color = EmeraldLight
                             ),
                             textAlign = TextAlign.Center
@@ -883,7 +926,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             text = if (isRussian) "Размер файла: ${formatSize(file.length())}" else "File Size: ${formatSize(file.length())}",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Normal
                             ),
                             color = TextSecondary
                         )
@@ -924,7 +967,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                     Text(
                                         text = if (isRussian) "Скачать" else "Save",
                                         style = MaterialTheme.typography.labelLarge.copy(
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.Normal,
                                             fontSize = 12.sp
                                         ),
                                         maxLines = 1,
@@ -970,7 +1013,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                     Text(
                                         text = if (isRussian) "Отправить" else "Share",
                                         style = MaterialTheme.typography.labelLarge.copy(
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.Normal,
                                             fontSize = 12.sp
                                         ),
                                         maxLines = 1,
@@ -990,7 +1033,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                 Text(
                                     text = if (isRussian) "Закрыть" else "Close", 
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Normal,
                                     color = TextSecondary
                                 )
                             }
@@ -1020,7 +1063,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             text = if (isRussian) "Добавить имя пакета" else "Register Custom Package",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Normal,
                                 color = EmeraldLight
                             )
                         )
@@ -1075,7 +1118,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             TextButton(onClick = { showCustomPackageDialog = false }) {
                                 Text(
                                     text = if (isRussian) "Отмена" else "Cancel", 
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Normal,
                                     color = TextSecondary
                                 )
                             }
@@ -1095,7 +1138,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             ) {
                                 Text(
                                     text = if (isRussian) "Добавить" else "Add & Scan",
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
                         }
@@ -1210,7 +1253,7 @@ fun WorldCard(world: MinecraftWorld, isRussian: Boolean = false, onExport: () ->
                     text = world.displayName,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Normal,
                         color = Color.White
                     ),
                     maxLines = 1,
@@ -1237,7 +1280,7 @@ fun WorldCard(world: MinecraftWorld, isRussian: Boolean = false, onExport: () ->
                         text = formatSize(world.sizeBytes),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Normal,
                             color = EmeraldLight
                         )
                     )
