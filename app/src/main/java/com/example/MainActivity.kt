@@ -564,73 +564,185 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Quick chips (HORIZONTALLY SCROLLABLE to support many items!)
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        state.packages.forEach { pkg ->
-                            val isSelected = state.selectedPackage == pkg
-                            val labelRes = if (pkg == "com.mojang.minecraftpe") {
-                                "Minecraft"
+                    state.packages.forEach { pkg ->
+                        val isSelected = state.selectedPackage == pkg
+                        val labelRes = remember(pkg) {
+                            if (pkg == "com.mojang.minecraftpe") {
+                                if (isRussian) "Майнкрафт" else "Minecraft"
                             } else if (pkg == "com.mojang.minecrafttrialpe") {
-                                "Minecraft Trial"
+                                if (isRussian) "Майнкрафт Пробная версия" else "Minecraft Trial"
                             } else {
-                                pkg.substringAfterLast(".")
+                                try {
+                                    val appInfo = context.packageManager.getApplicationInfo(pkg, 0)
+                                    context.packageManager.getApplicationLabel(appInfo).toString()
+                                } catch (e: Exception) {
+                                    pkg.substringAfterLast(".")
+                                }
                             }
-                            
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.selectPackage(context, pkg) },
-                                label = { 
+                        }
+
+                        // Safely load App Icon from PackageManager
+                        val appIcon = remember(pkg) {
+                            try {
+                                val pm = context.packageManager
+                                val appInfo = pm.getApplicationInfo(pkg, 0)
+                                val drawable = pm.getApplicationIcon(appInfo)
+                                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 96
+                                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 96
+                                val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                                val canvas = android.graphics.Canvas(b)
+                                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                                drawable.draw(canvas)
+                                b.asImageBitmap()
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+
+                        // Safely load App Version from PackageManager
+                        val appVersion = remember(pkg) {
+                            try {
+                                val packageInfo = context.packageManager.getPackageInfo(pkg, 0)
+                                packageInfo.versionName
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (isSelected) EmeraldLight.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.04f),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) EmeraldLight.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.12f)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { viewModel.selectPackage(context, pkg) }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // App Icon or fallback sprite
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.White.copy(alpha = 0.05f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (appIcon != null) {
+                                        Image(
+                                            bitmap = appIcon,
+                                            contentDescription = labelRes,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        SpriteIcon(
+                                            spriteRes = R.drawable.icons,
+                                            indexX = 0,
+                                            indexY = 0,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                // App Name & Package Version info
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
                                     Text(
-                                        text = labelRes, 
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Normal
-                                    ) 
-                                },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = EmeraldLight.copy(alpha = 0.15f),
-                                    selectedLabelColor = EmeraldLight,
-                                    containerColor = Color.White.copy(alpha = 0.04f),
-                                    labelColor = TextSecondary
-                                ),
-                                border = FilterChipDefaults.filterChipBorder(
-                                    enabled = true,
-                                    selected = isSelected,
-                                    selectedBorderColor = EmeraldLight.copy(alpha = 0.5f),
-                                    borderColor = Color.White.copy(alpha = 0.15f),
-                                    borderWidth = 1.dp,
-                                    selectedBorderWidth = 1.dp
+                                        text = labelRes,
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.White
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = if (appVersion != null) {
+                                            if (isRussian) "Версия: $appVersion" else "Version: $appVersion"
+                                        } else {
+                                            if (isRussian) "Приложение не установлено" else "App is not installed"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Normal,
+                                            color = TextSecondary
+                                        )
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                // Checked indicator mark
+                                if (isSelected) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .background(EmeraldLight),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        SpriteIcon(
+                                            spriteRes = R.drawable.icons,
+                                            indexX = 1,
+                                            indexY = 2,
+                                            modifier = Modifier.size(10.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Plus button option aligned at the end of list for adding a custom package definition
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color.White.copy(alpha = 0.02f),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { showCustomPackageDialog = true }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.White.copy(alpha = 0.03f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                SpriteIcon(
+                                    spriteRes = R.drawable.icons,
+                                    indexX = 0,
+                                    indexY = 1,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = if (isRussian) "Добавить свой пакет..." else "Add custom package...",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = TextSecondary
                                 )
                             )
                         }
-                    }
- 
-                    // Add custom pack button
-                    IconButton(
-                        onClick = { showCustomPackageDialog = true },
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White.copy(alpha = 0.07f))
-                            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
-                            .size(42.dp)
-                    ) {
-                        SpriteIcon(
-                            spriteRes = R.drawable.icons,
-                            indexX = 0,
-                            indexY = 1,
-                            modifier = Modifier.size(20.dp)
-                        )
                     }
                 }
  
