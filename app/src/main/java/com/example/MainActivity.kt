@@ -436,112 +436,115 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
             // Status warning banner (Gentle diagnostics only, NO screen locking!)
-            AnimatedVisibility(
-                visible = !(state.shizukuAvailable && state.shizukuPermission),
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.07f)
-                    ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp)
+            item {
+                AnimatedVisibility(
+                    visible = !(state.shizukuAvailable && state.shizukuPermission),
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
                 ) {
-                    Column(
-                        modifier = Modifier.padding(18.dp)
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White.copy(alpha = 0.07f)
+                        ),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.padding(18.dp)
                         ) {
-                            SpriteIcon(
-                                spriteRes = R.drawable.icons,
-                                indexX = 2,
-                                indexY = 1,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (isRussian) "Как настроить / Помощь" else "Troubleshooting Guide",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Normal,
-                                    color = Color.White
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                SpriteIcon(
+                                    spriteRes = R.drawable.icons,
+                                    indexX = 2,
+                                    indexY = 1,
+                                    modifier = Modifier.size(22.dp)
                                 )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (isRussian) "Как настроить / Помощь" else "Troubleshooting Guide",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = Color.White
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = if (isRussian) {
+                                    "Даже если Shizuku указан неактивным, утилита пытается отправить запросы. Запустите Shizuku на девайсе вручную и разрешите доступ."
+                                } else {
+                                    "Even if Shizuku reports inactive, we will attempt scans. Launch the Shizuku app manually and grant permission for this tool to operate."
+                                },
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 12.sp,
+                                    lineHeight = 18.sp
+                                ),
+                                color = TextSecondary
                             )
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = if (isRussian) {
-                                "Даже если Shizuku указан неактивным, утилита пытается отправить запросы. Запустите Shizuku на девайсе вручную и разрешите доступ."
-                            } else {
-                                "Even if Shizuku reports inactive, we will attempt scans. Launch the Shizuku app manually and grant permission for this tool to operate."
-                            },
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontSize = 12.sp,
-                                lineHeight = 18.sp
-                            ),
-                            color = TextSecondary
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            if (!state.shizukuAvailable) {
-                                Button(
-                                    onClick = {
-                                        // Open Shizuku application directly
-                                        try {
-                                            val launchIntent = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
-                                            if (launchIntent != null) {
-                                                context.startActivity(launchIntent)
-                                            } else {
-                                                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app"))
-                                                context.startActivity(webIntent)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                if (!state.shizukuAvailable) {
+                                    Button(
+                                        onClick = {
+                                            // Open Shizuku application directly
+                                            try {
+                                                val launchIntent = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                                                if (launchIntent != null) {
+                                                    context.startActivity(launchIntent)
+                                                } else {
+                                                    val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app"))
+                                                    context.startActivity(webIntent)
+                                                }
+                                            } catch (e: Exception) {
+                                                Toast.makeText(
+                                                    context, 
+                                                    if (isRussian) "Не удалось открыть Shizuku. Перейдите вручную." else "Could not open Shizuku. Navigate manually.", 
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
-                                        } catch (e: Exception) {
-                                            Toast.makeText(
-                                                context, 
-                                                if (isRussian) "Не удалось открыть Shizuku. Перейдите вручную." else "Could not open Shizuku. Navigate manually.", 
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    },
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = EmeraldLight,
+                                            contentColor = EmeraldDark
+                                        ),
+                                        shape = RoundedCornerShape(18.dp),
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isRussian) "Открыть Shizuku" else "Open Shizuku App", 
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
+                                
+                                Button(
+                                    onClick = { viewModel.requestPermission() },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = EmeraldLight,
-                                        contentColor = EmeraldDark
+                                        containerColor = Color.White.copy(alpha = 0.07f),
+                                        contentColor = EmeraldLight
                                     ),
+                                    border = BorderStroke(1.dp, EmeraldLight.copy(alpha = 0.4f)),
                                     shape = RoundedCornerShape(18.dp),
                                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
                                 ) {
                                     Text(
-                                        text = if (isRussian) "Открыть Shizuku" else "Open Shizuku App", 
+                                        text = if (isRussian) "Разрешить доступ" else "Grant Permission", 
+                                        color = EmeraldLight,
                                         fontWeight = FontWeight.Normal,
                                         fontSize = 12.sp
                                     )
                                 }
-                            }
-                            
-                            Button(
-                                onClick = { viewModel.requestPermission() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.White.copy(alpha = 0.07f),
-                                    contentColor = EmeraldLight
-                                ),
-                                border = BorderStroke(1.dp, EmeraldLight.copy(alpha = 0.4f)),
-                                shape = RoundedCornerShape(18.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-                            ) {
-                                Text(
-                                    text = if (isRussian) "Разрешить доступ" else "Grant Permission", 
-                                    color = EmeraldLight,
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 12.sp
-                                )
                             }
                         }
                     }
@@ -549,23 +552,11 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             }
 
             // Folder details & Package selector
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp)
-            ) {
-                Text(
-                    text = if (isRussian) "Целевая папка игры" else "Target Game Folder",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = EmeraldLight
-                    )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                
+            item {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     state.packages.forEach { pkg ->
@@ -681,26 +672,6 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                                         )
                                     )
                                 }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                // Checked indicator mark
-                                if (isSelected) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .clip(CircleShape)
-                                            .background(EmeraldLight),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        SpriteIcon(
-                                            spriteRes = R.drawable.icons,
-                                            indexX = 1,
-                                            indexY = 2,
-                                            modifier = Modifier.size(10.dp)
-                                        )
-                                    }
-                                }
                             }
                         }
                     }
@@ -745,12 +716,14 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         }
                     }
                 }
- 
-                Spacer(modifier = Modifier.height(14.dp))
- 
-                // Display selected path log
+            }
+
+            // Display selected path log
+            item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.07f)),
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
@@ -797,11 +770,13 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         )
                     }
                 }
- 
-                Spacer(modifier = Modifier.height(20.dp))
- 
+            }
+
+            item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -813,7 +788,7 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             color = Color.White
                         )
                     )
- 
+
                     Button(
                         onClick = { viewModel.scanWorlds(context, state.selectedPackage) },
                         enabled = !state.isScanning,
@@ -842,88 +817,84 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
             // World Lists
             if (state.isScanning) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(color = EmeraldLight)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = if (isRussian) "Запрос через активный Shizuku..." else "Querying via active Shizuku binder...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(color = EmeraldLight)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (isRussian) "Запрос через активный Shizuku..." else "Querying via active Shizuku binder...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
                 }
             } else if (state.worlds.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.worlds, key = { world -> world.directoryName + "_" + world.packageSource }) { world ->
+                items(state.worlds, key = { world -> world.directoryName + "_" + world.packageSource }) { world ->
+                    Box(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
                         WorldCard(world = world, isRussian = isRussian, onExport = { viewModel.exportWorld(context, world) })
                     }
                 }
             } else {
-                // Empty view or error view
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    SpriteIcon(
-                        spriteRes = R.drawable.icons,
-                        indexX = 2,
-                        indexY = 1,
-                        modifier = Modifier.size(52.dp)
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        text = if (isRussian) "Миры не обнаружены" else "No Worlds Detected",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Normal
-                        ),
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = if (isRussian) {
-                            "Миры не найдены. Убедитесь, что у вас есть миры, созданные во внешнем (External) хранилище Minecraft."
-                        } else {
-                            "No worlds found. Make sure your active Minecraft worlds are stored in External storage."
-                        },
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        ),
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(
-                        onClick = { viewModel.scanWorlds(context, state.selectedPackage) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = EmeraldLight,
-                            contentColor = EmeraldDark
-                        ),
-                        shape = RoundedCornerShape(18.dp),
-                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = if (isRussian) "ФОРСИРОВАТЬ СКАНИРОВАНИЕ" else "FORCE SCAN NOW", 
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 13.sp
+                        SpriteIcon(
+                            spriteRes = R.drawable.icons,
+                            indexX = 2,
+                            indexY = 1,
+                            modifier = Modifier.size(52.dp)
                         )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = if (isRussian) "Миры не обнаружены" else "No Worlds Detected",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Normal
+                            ),
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (isRussian) {
+                                "Миры не найдены. Убедитесь, что у вас есть миры, созданные во внешнем (External) хранилище Minecraft."
+                            } else {
+                                "No worlds found. Make sure your active Minecraft worlds are stored in External storage."
+                            },
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp
+                            ),
+                            color = TextSecondary,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            onClick = { viewModel.scanWorlds(context, state.selectedPackage) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = EmeraldLight,
+                                contentColor = EmeraldDark
+                            ),
+                            shape = RoundedCornerShape(18.dp),
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
+                        ) {
+                            Text(
+                                text = if (isRussian) "ФОРСИРОВАТЬ СКАНИРОВАНИЕ" else "FORCE SCAN NOW", 
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 13.sp
+                            )
+                        }
                     }
                 }
             }
