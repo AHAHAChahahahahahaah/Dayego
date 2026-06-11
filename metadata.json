@@ -1,0 +1,6 @@
+{
+  "name": "MC World Exporter",
+  "description": "Locate and export Minecraft worlds from Android/data using Shizuku.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
