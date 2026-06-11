@@ -70,6 +70,37 @@ class MainViewModel : ViewModel() {
         )
     }
 
+    fun discoverPackages(context: Context) {
+        val current = _uiState.value as? UiState.Success ?: return
+        viewModelScope.launch {
+            val pm = context.packageManager
+            val discovered = withContext(Dispatchers.IO) {
+                try {
+                    val apps = pm.getInstalledApplications(android.content.pm.PackageManager.GET_META_DATA)
+                    apps.map { it.packageName }
+                        .filter { it.startsWith("com.mojang") }
+                } catch (e: Exception) {
+                    emptyList<String>()
+                }
+            }
+            if (discovered.isNotEmpty()) {
+                val newList = (current.packages + discovered).distinct()
+                val newSelected = if (discovered.contains(current.selectedPackage)) {
+                    current.selectedPackage
+                } else {
+                    discovered.first()
+                }
+                _uiState.value = current.copy(
+                    packages = newList,
+                    selectedPackage = newSelected
+                )
+                scanWorlds(context, newSelected)
+            } else {
+                scanWorlds(context, current.selectedPackage)
+            }
+        }
+    }
+
     fun selectPackage(context: Context, packageName: String) {
         val current = _uiState.value as? UiState.Success ?: return
         _uiState.value = current.copy(selectedPackage = packageName)

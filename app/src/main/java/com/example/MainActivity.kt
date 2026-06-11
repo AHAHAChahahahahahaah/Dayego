@@ -102,8 +102,7 @@ class MainActivity : ComponentActivity() {
 
         // Initialize diagnosis values and run initial check/scan
         viewModel.updateDiagnostics(this)
-        val defaultPkg = (viewModel.uiState.value as UiState.Success).selectedPackage
-        viewModel.scanWorlds(this, defaultPkg)
+        viewModel.discoverPackages(this)
 
         setContent {
             MyApplicationTheme {
