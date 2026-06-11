@@ -11,6 +11,8 @@
         <!-- Package visibility for Minecraft variants -->
         <package android:name="com.mojang.minecraftpe" />
         <package android:name="com.mojang.minecrafttrialpe" />
+        <!-- Package visibility for PineLauncher -->
+        <package android:name="com.ananas.pinelauncher" />
     </queries>
 
     <application
