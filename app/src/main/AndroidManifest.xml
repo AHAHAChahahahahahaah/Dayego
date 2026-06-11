@@ -3,10 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
     <queries>
         <!-- Package visibility for Shizuku -->
         <package android:name="moe.shizuku.privileged.api" />
+        <!-- Package visibility for Minecraft variants -->
+        <package android:name="com.mojang.minecraftpe" />
+        <package android:name="com.mojang.minecrafttrialpe" />
     </queries>
 
     <application
